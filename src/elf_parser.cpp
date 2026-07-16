@@ -38,7 +38,7 @@ bool ElfParser::parseHeader() {
     littleEndian_ = (elfData == 1);
 
     ElfHdrIterator c(buffer_, 16, littleEndian_); // 16 = end of e_ident
-    
+
     header_.e_type      = c.read<uint16_t>();
     header_.e_machine   = c.read<uint16_t>();
     header_.e_version   = c.read<uint32_t>();
