@@ -53,5 +53,35 @@ bool ElfParser::parseHeader() {
     header_.e_shnum     = c.read<uint16_t>();
     header_.e_shstrndx  = c.read<uint16_t>();
 
+    ElfIterator s(buffer_, header_.e_shoff, littleEndian_);
+
+    sectionHeaders_.resize(header_.e_shnum);
+    for (int i = 0; i < header_.e_shnum; ++i) {
+        sectionHeaders_[i].sh_name = s.read<uint32_t>();
+        sectionHeaders_[i].sh_type = s.read<uint32_t>();
+        sectionHeaders_[i].sh_flags = s.read<uint64_t>();
+        sectionHeaders_[i].sh_addr = s.read<uint64_t>();
+        sectionHeaders_[i].sh_offset = s.read<uint64_t>();
+        sectionHeaders_[i].sh_size = s.read<uint64_t>();
+        sectionHeaders_[i].sh_link = s.read<uint32_t>();
+        sectionHeaders_[i].sh_info = s.read<uint32_t>();
+        sectionHeaders_[i].sh_addralign = s.read<uint64_t>();
+        sectionHeaders_[i].sh_entsize = s.read<uint64_t>();
+    }
+
+    ElfIterator p(buffer_, header_.e_phoff, littleEndian_);
+
+    programHeaders_.resize(header_.e_phnum);
+    for (int i = 0; i < header_.e_phnum; ++i) {
+        programHeaders_[i].p_type = p.read<uint32_t>();
+        programHeaders_[i].p_flags = p.read<uint32_t>();
+        programHeaders_[i].p_offset = p.read<uint64_t>();
+        programHeaders_[i].p_vaddr = p.read<uint64_t>();
+        programHeaders_[i].p_paddr = p.read<uint64_t>();
+        programHeaders_[i].p_filesz = p.read<uint64_t>();
+        programHeaders_[i].p_memsz = p.read<uint64_t>();
+        programHeaders_[i].p_align = p.read<uint64_t>();
+    }
+
     return true;
 }

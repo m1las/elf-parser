@@ -19,6 +19,8 @@ int main(int argc, char** argv) {
     }
 
     const ElfHdr64& h = parser.header();
+    const std::vector<unsigned char>& raw_buffer = parser.buffer();
+
     std::cout << "ELF Header:\n";
 
     std::cout << "Type:    " << h.e_type << "\n";
@@ -35,57 +37,19 @@ int main(int argc, char** argv) {
     std::cout << "SH entry count: " << h.e_shnum << "\n";
     std::cout << "SH str index: " << h.e_shstrndx << "\n";
 
-    // --------- Testing reading section headers !!
-    // Not worried about error handling here, just testing the iterator. Will add a separate class for reading section headers later.
 
-    // logic copied from ElfParser::parseHeader() to get buffer and endianness
-    std::ifstream file(argv[1], std::ios::binary | std::ios::ate);
-    std::streamsize size = file.tellg();
-    file.seekg(0, std::ios::beg);
-
-    std::vector<unsigned char> tempBuffer(static_cast<size_t>(size));
-
-    tempBuffer.resize(static_cast<size_t>(size));
-    file.read(reinterpret_cast<char*>(tempBuffer.data()), size);
-
-    bool littleEndian = (h.e_ident[5] == 1);
-
-    Elf64_Shdr shdr;
-    ElfIterator it(tempBuffer, h.e_shoff, littleEndian);
-    std::vector<Elf64_Shdr> sectionHeaders;
+    const std::vector<Elf64_Shdr>& sectionHeaders = parser.sectionHeaders();
     const uint16_t shstrtab_index = h.e_shstrndx;
-    // .shstrtab is the section header string table, which contains the names of the sections. The index of this section is stored in e_shstrndx. 
-    // We can use this index to find the offset of the .shstrtab section and read the section names from it.
-
-    std::cout << "\nSection Headers:\n";
-
-    for (int i = 0; i < h.e_shnum; ++i) {
-        shdr.sh_name      = it.read<uint32_t>();
-        shdr.sh_type      = it.read<uint32_t>();
-        shdr.sh_flags     = it.read<uint64_t>();
-        shdr.sh_addr      = it.read<uint64_t>();
-        shdr.sh_offset    = it.read<uint64_t>();
-        shdr.sh_size      = it.read<uint64_t>();
-        shdr.sh_link      = it.read<uint32_t>();
-        shdr.sh_info      = it.read<uint32_t>();
-        shdr.sh_addralign = it.read<uint64_t>();
-        shdr.sh_entsize   = it.read<uint64_t>();
-
-        sectionHeaders.push_back(shdr);
-    }
-
     const uint64_t shstrtab_offset = sectionHeaders[shstrtab_index].sh_offset;
 
-    for(const auto& x : sectionHeaders) {
-        std::string sectionName = reinterpret_cast<const char*>(tempBuffer.data() + shstrtab_offset + x.sh_name);
+    std::cout << "\nSection Headers:\n";
+    for (const auto& sh : sectionHeaders) {
+        std::string sectionName = reinterpret_cast<const char*>(raw_buffer.data() + shstrtab_offset + sh.sh_name);
         if(sectionName.empty()) continue;
 
-        std::cout << "Section: " << sectionName << ", Type: " << x.sh_type << ", Offset: 0x" << std::hex << x.sh_offset << std::dec << ", Size: " << x.sh_size << "\n";
+        std::cout << "Name: " << sectionName << ", Type: 0x" << std::hex << sh.sh_type << ", Offset: 0x" << sh.sh_offset << ", Size: 0x" << sh.sh_size << std::dec << "\n";
     }
-
-    std::cout << "\nRead " << sectionHeaders.size() - 1 << " section headers.\n"; // ignoring the null section header at index 0, which is always present in ELF files
-
-    // works against /bin/ls on my machine
+    
     
     return 0;
 }
