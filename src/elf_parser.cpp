@@ -83,5 +83,40 @@ bool ElfParser::parseHeader() {
         programHeaders_[i].p_align = p.read<uint64_t>();
     }
 
+    for (const auto& sh : sectionHeaders_) {
+        if (sh.sh_type == SHT_SYMTAB) {
+            stripped_ = false;
+            break;
+        }
+    }
+
+    if (!stripped_) {
+        const Elf64_Shdr* symtabSection = nullptr;
+
+        for (const auto& sh : sectionHeaders_) {
+            if (sh.sh_type == SHT_SYMTAB) {
+                symtabSection = &sh;
+                break;
+            }
+        }
+
+        if (symtabSection) {
+            ElfIterator symIt(buffer_, symtabSection->sh_offset, littleEndian_);
+            size_t numSymbols = symtabSection->sh_size / symtabSection->sh_entsize;
+            symbols_.resize(numSymbols);
+
+            for (size_t i = 0; i < numSymbols; ++i) {
+                symbols_[i].st_name  = symIt.read<uint32_t>();
+                symbols_[i].st_info  = symIt.read<unsigned char>();
+                symbols_[i].st_other = symIt.read<unsigned char>();
+                symbols_[i].st_shndx = symIt.read<uint16_t>();
+                symbols_[i].st_value = symIt.read<uint64_t>();
+                symbols_[i].st_size  = symIt.read<uint64_t>();
+            }
+
+            symtabStrtabIndex_ = symtabSection->sh_link; // index of symbol string table section for name resolution
+        }
+    }
+
     return true;
 }

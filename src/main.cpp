@@ -59,6 +59,31 @@ int main(int argc, char** argv) {
         ", VAddr: 0x" << ph.p_vaddr << ", PAddr: 0x" << ph.p_paddr << ", FileSz: 0x" << ph.p_filesz << 
         ", MemSz: 0x" << ph.p_memsz << ", Flags: " << segment_flags_to_string(ph.p_flags) << ", Align: 0x" << ph.p_align << std::dec << "\n";
     }
+
+
+    const std::vector<Elf64_Sym>& symbols = parser.symbols();
+
+    if (parser.isStripped()) {
+        std::cout << "\nThe ELF file is stripped. No symbols available.\n"; // maybe we will parse dynsym as well later
+        return 0;
+    }
+
+    std::cout << "\nSymbol Table '.symtab':\n";
+    const uint32_t strtab_idx = parser.symtabStrtabIndex();
+
+    for (const auto& sym : symbols) {
+        std::string symbolName = "(null)";
+        if (sym.st_name != 0) {
+            symbolName = reinterpret_cast<const char*>(raw_buffer.data() + sectionHeaders[strtab_idx].sh_offset + sym.st_name);
+        }
+
+        uint8_t binding = sym.st_info >> 4; // top nibble
+        uint8_t type    = sym.st_info & 0xf; // bottom nibble
+
+        std::cout << "Binding: " << symbol_binding_to_string(binding) << ", Type: " << symbol_type_to_string(type) << 
+        ", Section index: " << section_index_to_string(sym.st_shndx) << ", Size: 0x" << sym.st_size << ", Value: 0x" << 
+        std::hex << sym.st_value << std::dec << ", Name: " << symbolName << "\n";
+    }
     
     return 0;
 }

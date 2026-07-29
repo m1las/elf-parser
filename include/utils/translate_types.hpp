@@ -5,6 +5,7 @@
 #include <iomanip>
 #include "../elfparser/elf_types.hpp"
 
+
 #define PF_X 0x1
 #define PF_W 0x2
 #define PF_R 0x4
@@ -15,6 +16,15 @@ inline std::string segment_flags_to_string(uint32_t flags) {
     out += (flags & PF_W) ? 'W' : '-';
     out += (flags & PF_X) ? 'E' : '-';
     return out;
+}
+
+inline std::string section_index_to_string(uint16_t shndx) {
+    switch (shndx) {
+        case SHN_UNDEF:  return "UND";
+        case SHN_ABS:    return "ABS";
+        case SHN_COMMON: return "COM";
+        default:         return std::to_string(shndx);
+    }
 }
 
 inline std::string section_type_to_string(uint32_t type) {
@@ -77,5 +87,33 @@ inline std::string segment_type_to_string(uint32_t type) {
             oss << "UNKNOWN (0x" << std::hex << type << ")";
             return oss.str();
         }
+    }
+}
+
+inline std::string symbol_binding_to_string(uint8_t binding) {
+    switch (binding) {
+        case STB_LOCAL:  return "LOCAL";
+        case STB_GLOBAL: return "GLOBAL";
+        case STB_WEAK:   return "WEAK";
+        case STB_LOOS:   return "LOOS";
+        case STB_HIOS:   return "HIOS";
+        case STB_LOPROC: return "LOPROC";
+        case STB_HIPROC: return "HIPROC";
+        default:         return std::to_string(binding);
+    }
+}
+
+inline std::string symbol_type_to_string(uint8_t type) {
+    switch (type) {
+        case STT_NOTYPE: return "NOTYPE";
+        case STT_OBJECT: return "OBJECT";
+        case STT_FUNC:   return "FUNC";
+        case STT_SECTION: return "SECTION";
+        case STT_FILE:   return "FILE";
+        case STT_LOOS:   return "LOOS";
+        case STT_HIOS:   return "HIOS";
+        case STT_LOPROC: return "LOPROC";
+        case STT_HIPROC: return "HIPROC";
+        default:         return std::to_string(type);
     }
 }

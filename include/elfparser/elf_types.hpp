@@ -41,6 +41,48 @@
 #define SHT_HIUSER          0xffffffff
 
 
+// Special Section Indexes
+
+#define SHN_UNDEF          0     
+#define SHN_LORESERVE      0xff00
+
+#define SHN_LOPROC         0xff00
+#define SHN_HIPROC         0xff1f
+
+#define SHN_LOOS           0xff20
+#define SHN_HIOS           0xff3f
+
+#define SHN_ABS            0xfff1
+#define SHN_COMMON         0xfff2
+#define SHN_XINDEX         0xffff
+
+#define SHN_HIRESERVE      0xffff
+
+
+// Symbol Bindings
+
+#define STB_LOCAL          0
+#define STB_GLOBAL         1
+#define STB_WEAK           2
+#define STB_LOOS           10
+#define STB_HIOS           12
+#define STB_LOPROC         13
+#define STB_HIPROC         15
+
+
+// Symbol Types
+
+#define STT_NOTYPE         0 
+#define STT_OBJECT         1 
+#define STT_FUNC           2 
+#define STT_SECTION        3 
+#define STT_FILE           4 
+#define STT_LOOS           10 
+#define STT_HIOS           12 
+#define STT_LOPROC         13 
+#define STT_HIPROC         15 
+
+
 // Program Header Types
 
 #define PT_NULL             0
@@ -103,4 +145,13 @@ struct Elf64_Phdr {
   uint64_t p_filesz;
   uint64_t p_memsz;
   uint64_t p_align;	
+};
+
+struct Elf64_Sym {
+    uint32_t st_name;  
+    unsigned char st_info; 
+    unsigned char st_other; 
+    uint16_t st_shndx; 
+    uint64_t st_value; 
+    uint64_t st_size;  
 };
