@@ -3,6 +3,7 @@
 
 #include "elfparser/elf_parser.hpp"
 #include "utils/byte_iterator.hpp"
+#include "utils/translate_types.hpp"
 
 #include <fstream>
 
@@ -47,9 +48,17 @@ int main(int argc, char** argv) {
         std::string sectionName = reinterpret_cast<const char*>(raw_buffer.data() + shstrtab_offset + sh.sh_name);
         if(sectionName.empty()) continue;
 
-        std::cout << "Name: " << sectionName << ", Type: 0x" << std::hex << sh.sh_type << ", Offset: 0x" << sh.sh_offset << ", Size: 0x" << sh.sh_size << std::dec << "\n";
+        std::cout << "Name: " << sectionName << ", Type: " << section_type_to_string(sh.sh_type) << std::hex << ", Offset: 0x" << sh.sh_offset << ", Size: 0x" << sh.sh_size << std::dec << "\n";
     }
     
+
+    const std::vector<Elf64_Phdr>& programHeaders = parser.programHeaders();
+    std::cout << "\nProgram Headers:\n";
+    for (const auto& ph : programHeaders) {
+        std::cout << "Type: " << segment_type_to_string(ph.p_type) << std::hex << ", Offset: 0x" << ph.p_offset << 
+        ", VAddr: 0x" << ph.p_vaddr << ", PAddr: 0x" << ph.p_paddr << ", FileSz: 0x" << ph.p_filesz << 
+        ", MemSz: 0x" << ph.p_memsz << ", Flags: " << segment_flags_to_string(ph.p_flags) << ", Align: 0x" << ph.p_align << std::dec << "\n";
+    }
     
     return 0;
 }
