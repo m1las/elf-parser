@@ -8,9 +8,10 @@ Built as a systems programming learning project.
 
 - ELF header parsing (`e_ident`, class, endianness, type, machine, entry point)
 - Section header table with name resolution via `.shstrtab`
+- Program header table (segment types, flags, virtual/physical addresses)
 
 ### Eventually: 
-- Program header table (segment types, flags, virtual/physical addresses)
+
 - Symbol table (`.symtab` / `.dynsym` with name resolution)
 - Dynamic section (`.dynamic`, `DT_NEEDED` imported library names)
 
